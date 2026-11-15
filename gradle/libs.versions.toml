@@ -1,0 +1,37 @@
+[versions]
+hibernate-orm-testing = "0.1.0"
+
+[libraries]
+assertj-core = { module = "org.assertj:assertj-core", version = "3.27.4" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version = "1.5.12" }
+
+# Each hibernate-orm-types-NN module compiles against the first release of its line (compileOnly, so the consumer's own hibernate-core decides the
+# runtime version). Every Hibernate minor is tested at its newest patch: the first minor of a module's range by the module itself, the others by
+# the testing/testing-hibernate-orm-types-NN modules.
+hibernate-orm-v61-compile = { group = "org.hibernate.orm", name = "hibernate-core", version = "6.1.0.Final" }
+hibernate-orm-v62-compile = { group = "org.hibernate.orm", name = "hibernate-core", version = "6.2.0.Final" }
+hibernate-orm-v63-compile = { group = "org.hibernate.orm", name = "hibernate-core", version = "6.3.0.Final" }
+hibernate-orm-v70-compile = { group = "org.hibernate.orm", name = "hibernate-core", version = "7.0.0.Final" }
+hibernate-orm-v72-compile = { group = "org.hibernate.orm", name = "hibernate-core", version = "7.2.0.Final" }
+hibernate-orm-v80-compile = { group = "org.hibernate.orm", name = "hibernate-core", version = "8.0.0.CR1" }
+
+hibernate-orm-v61-test = { group = "org.hibernate.orm", name = "hibernate-core", version = "6.1.7.Final" }
+hibernate-orm-v62-test = { group = "org.hibernate.orm", name = "hibernate-core", version = "6.2.52.Final" }
+hibernate-orm-v63-test = { group = "org.hibernate.orm", name = "hibernate-core", version = "6.3.2.Final" }
+hibernate-orm-v64-test = { group = "org.hibernate.orm", name = "hibernate-core", version = "6.4.10.Final" }
+hibernate-orm-v65-test = { group = "org.hibernate.orm", name = "hibernate-core", version = "6.5.3.Final" }
+hibernate-orm-v66-test = { group = "org.hibernate.orm", name = "hibernate-core", version = "6.6.59.Final" }
+hibernate-orm-v70-test = { group = "org.hibernate.orm", name = "hibernate-core", version = "7.0.10.Final" }
+hibernate-orm-v71-test = { group = "org.hibernate.orm", name = "hibernate-core", version = "7.1.36.Final" }
+hibernate-orm-v72-test = { group = "org.hibernate.orm", name = "hibernate-core", version = "7.2.25.Final" }
+hibernate-orm-v73-test = { group = "org.hibernate.orm", name = "hibernate-core", version = "7.3.13.Final" }
+hibernate-orm-v74-test = { group = "org.hibernate.orm", name = "hibernate-core", version = "7.4.16.Final" }
+hibernate-orm-v80-test = { group = "org.hibernate.orm", name = "hibernate-core", version = "8.0.0.CR1" }
+
+# The test harness: integration test bases per Hibernate ORM line, on PostgreSQL and MySQL in Testcontainers
+hibernate-orm-testing-v61 = { group = "org.framefork.testing", name = "hibernate-orm-testing-61", version.ref = "hibernate-orm-testing" }
+hibernate-orm-testing-v62 = { group = "org.framefork.testing", name = "hibernate-orm-testing-62", version.ref = "hibernate-orm-testing" }
+hibernate-orm-testing-v63 = { group = "org.framefork.testing", name = "hibernate-orm-testing-63", version.ref = "hibernate-orm-testing" }
+hibernate-orm-testing-v70 = { group = "org.framefork.testing", name = "hibernate-orm-testing-70", version.ref = "hibernate-orm-testing" }
+hibernate-orm-testing-v72 = { group = "org.framefork.testing", name = "hibernate-orm-testing-72", version.ref = "hibernate-orm-testing" }
+hibernate-orm-testing-v80 = { group = "org.framefork.testing", name = "hibernate-orm-testing-80", version.ref = "hibernate-orm-testing" }

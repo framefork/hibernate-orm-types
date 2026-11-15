@@ -1,0 +1,90 @@
+name: Run Checks via Gradle
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.console=plain -Dorg.gradle.daemon=false -Dorg.gradle.stacktrace=always"
+
+jobs:
+  gradle:
+    name: JDK ${{ matrix.jdk }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        jdk: [17, 21, 25]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          # The convention plugin disables toolchain auto-download, so every JDK the build touches must be pre-installed:
+          # the compile toolchain (framefork { jdkVersion } = 25) and the matrix test-runtime launcher (-Ptests.jdk.version).
+          # The last entry is the default JAVA_HOME the outer Gradle runs on: it must be >= 21 because the
+          # org.framefork.build plugin artifact requires a JVM 21+ runtime to resolve on the buildscript classpath.
+          java-version: |
+            ${{ matrix.jdk }}
+            25
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          # basic: the MIT-licensed caching on the GitHub Actions cache; the default 'enhanced' loads a proprietary component under Gradle's Terms of Use
+          cache-provider: basic
+          add-job-summary-as-pr-comment: on-failure
+
+      - name: Gradle toolchains info
+        run: ./gradlew -q javaToolchains -Ptests.jdk.version=${{ matrix.jdk }}
+
+      - name: Gradle build environment info
+        run: ./gradlew -q buildEnvironment
+
+      # Compile once on the standard toolchain (jdkVersion=25, --release minJavaVersion), run tests on the matrix JDK.
+      - name: Execute Gradle build
+        run: ./gradlew --continue build -Ptests.jdk.version=${{ matrix.jdk }}
+
+      - name: Upload Test Report
+        uses: actions/upload-artifact@v7
+        if: always() # always run even if the previous step fails
+        with:
+          name: junit-test-results-jdk${{ matrix.jdk }}
+          path: |
+            **/build/test-results/test/TEST-*.xml
+          retention-days: 1
+          overwrite: true
+
+  lockfiles:
+    name: Dependency lockfiles are fresh
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          # >= 21: the org.framefork.build plugin artifact requires a JVM 21+ runtime to resolve on the buildscript classpath.
+          java-version: 25
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          # basic: the MIT-licensed caching on the GitHub Actions cache; the default 'enhanced' loads a proprietary component under Gradle's Terms of Use
+          cache-provider: basic
+
+      # strict locking already fails normal builds when a declared version is bumped above the lock; this job
+      # catches the silent remainder (declared-lower-than-locked, removed-but-still-locked) by regenerating and diffing.
+      - name: Regenerate all lockfiles
+        run: ./gradlew resolveAndLockAll --write-locks
+
+      # '*.lockfile' matches at any depth, including the root settings-gradle.lockfile that '**/*.lockfile' misses
+      - name: Verify lockfiles are up to date
+        run: git diff --exit-code -- '*.lockfile'
